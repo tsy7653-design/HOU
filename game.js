@@ -74,6 +74,9 @@ function create() {
         };
     });
 
+
+
+
     player.setCollideWorldBounds(true);
     player.body.enable = false;
     player.body.setSize(player.width * 0.6, player.height * 0.6, true);
