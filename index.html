@@ -1,60 +1,23 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <title>鲎的壮丽成长史</title>
     <style>
-        body { margin: 0; overflow: hidden; background: #000; }
-        canvas { display: block; }
-        
-        /* --- 彻底回归原始 2.0 样式 --- */
-        #cheat-box {
-            display: none;
-            position: absolute; /* 还原回绝对定位 */
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0, 0, 0, 0.9);
-            padding: 25px;
-            border: 2px solid #00ffff;
-            border-radius: 15px;
-            text-align: center;
-            z-index: 2000;
-            box-shadow: 0 0 20px #00ffff;
-            font-family: "Microsoft YaHei", sans-serif;
+        html, body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background: #f4d1a0;
         }
-        #cheat-box input {
-            background: #111;
-            color: #00ffff;
-            border: 1px solid #00ffff;
-            padding: 10px;
-            margin-bottom: 15px;
-            width: 180px;
-            outline: none;
-            text-align: center;
-            font-size: 18px;
-        }
-        #cheat-box button {
-            background: #00ffff;
-            color: #000;
-            border: none;
-            padding: 8px 25px;
-            cursor: pointer;
-            font-weight: bold;
-            border-radius: 5px;
+
+        canvas {
+            display: block;
         }
     </style>
 </head>
 <body>
-    <div id="game-container"></div>
-
-    <div id="cheat-box">
-        <div style="color:#00ffff; margin-bottom:15px;">系统身份验证</div>
-        <input type="password" id="cheat-input" placeholder="输入暗号">
-        <br>
-        <button id="cheat-confirm">确认开启进化</button>
-    </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
-    <script src="game.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.80.1/dist/phaser.min.js"></script>
+    <script src="game.js?v=10"></script>
 </body>
 </html>
