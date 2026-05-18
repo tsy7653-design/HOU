@@ -1,6 +1,6 @@
 // =====================================================
 // Phaser 游戏基础配置
-// 高清显示版：适配手机 / iPad / 高分屏
+// 稳定清晰版：比原来清楚，但不使用太激进的自适应
 // =====================================================
 const config = {
     type: Phaser.AUTO,
@@ -8,22 +8,15 @@ const config = {
     width: window.innerWidth,
     height: window.innerHeight,
 
-    // 高分屏适配：让 iPad / 手机不要糊
-    // 最高限制到 2，避免太高导致性能下降
-    resolution: Math.min(window.devicePixelRatio || 1, 2),
+    // 高分屏适配：1.5 比 2 更稳，减少手机 / iPad 卡顿或加载卡住
+    resolution: Math.min(window.devicePixelRatio || 1, 1.5),
 
     backgroundColor: '#f4d1a0',
 
     render: {
         antialias: true,
         pixelArt: false,
-        roundPixels: false,
-        transparent: false
-    },
-
-    scale: {
-        mode: Phaser.Scale.RESIZE,
-        autoCenter: Phaser.Scale.CENTER_BOTH
+        roundPixels: false
     },
 
     physics: {
@@ -234,6 +227,7 @@ function T(key) {
 
 // =====================================================
 // 自适应布局计算
+// 这版保留自适应，但控制最大显示尺寸，避免图片被放太大而变糊
 // =====================================================
 function recalcLayout() {
     sw = window.innerWidth;
@@ -241,29 +235,28 @@ function recalcLayout() {
 
     const shortSide = Math.min(sw, sh);
 
-    gameScale = Phaser.Math.Clamp(shortSide / 800, 0.65, 1.25);
+    gameScale = Phaser.Math.Clamp(shortSide / 800, 0.65, 1.15);
 
-    // 玩家基础大小
-    // 想让鲎更大一点，可以把 shortSide / 14 改成 / 13
-    baseWidth = Phaser.Math.Clamp(shortSide / 14, 48, 100);
+    // 鲎大小：压低最大值，减少放大导致的模糊
+    baseWidth = Phaser.Math.Clamp(shortSide / 15, 46, 82);
     baseHeight = baseWidth * aspectRatio;
 
-    // 玩家移动速度
-    // 原本是 260 * gameScale
-    // 现在降低约 30%，让游戏时间稍微拉长
+    // 玩家移动速度：比原本 260 降低约 30%
     moveSpeed = 182 * gameScale;
 
-    baseGrowth = 1.2 * gameScale;
+    baseGrowth = 1.1 * gameScale;
 
-    baseStoneSize = Phaser.Math.Clamp(shortSide * 0.11, 70, 120);
+    // 石头大小
+    baseStoneSize = Phaser.Math.Clamp(shortSide * 0.105, 68, 108);
 
-    // 虾稍微放大一点，在手机 / iPad 上更清楚
-    shrimpSize = Phaser.Math.Clamp(shortSide * 0.065, 44, 72);
+    // 虾大小：不要放太大，避免糊
+    shrimpSize = Phaser.Math.Clamp(shortSide * 0.055, 38, 58);
 
-    enemySize = Phaser.Math.Clamp(shortSide * 0.15, 105, 165);
+    // 海鸥大小
+    enemySize = Phaser.Math.Clamp(shortSide * 0.13, 90, 135);
 
     // 方向按钮大小
-    buttonSize = Phaser.Math.Clamp(shortSide * 0.08, 56, 74);
+    buttonSize = Phaser.Math.Clamp(shortSide * 0.075, 54, 68);
 }
 
 
@@ -289,15 +282,15 @@ function makeTextStyle(size, color = '#000', extra = {}) {
 
 // =====================================================
 // 资源加载
-// 加 ?v=30 是为了防止手机 / 浏览器一直加载旧图片缓存
-// 如果你换了图片，就把 30 改成 31、32、33...
+// ?v=40 用来防止手机 / 浏览器加载旧缓存
+// 如果你换了图片，就把 40 改成 41、42、43...
 // =====================================================
 function preload() {
-    this.load.image('hou', 'hou.png?v=30');
-    this.load.image('shrimp', 'shrimp.png?v=30');
-    this.load.image('bg', 'bg.jpg?v=30');
-    this.load.image('enemy', 'enemy.png?v=30');
-    this.load.image('stone', 'stone.png?v=30');
+    this.load.image('hou', 'hou.png?v=40');
+    this.load.image('shrimp', 'shrimp.png?v=40');
+    this.load.image('bg', 'bg.jpg?v=40');
+    this.load.image('enemy', 'enemy.png?v=40');
+    this.load.image('stone', 'stone.png?v=40');
 }
 
 
@@ -402,7 +395,7 @@ function create() {
 
     // =================================================
     // 左上角状态栏
-    // 你要改位置就改这里的 y 值：30、80、130
+    // 想调位置，主要改 30、80、130 这三个 y 值
     // =================================================
     scoreText = this.add.text(
         22,
@@ -489,16 +482,14 @@ function create() {
         gameStarted = true;
     });
 
-    // 窗口变化时刷新，避免 UI 错位
-    window.addEventListener('resize', () => {
-        location.reload();
-    });
+    // 注意：这里故意不写 resize 自动刷新
+    // 手机浏览器地址栏变化会触发 resize，自动刷新会导致卡住
 }
 
 
 // =====================================================
 // 开场语言选择按钮
-// 重点：全部放进 languagePanel，开始游戏后一次性 destroy
+// 全部放进 languagePanel，开始游戏后一次性 destroy
 // =====================================================
 function createLanguageButtons(scene, sw, sh) {
     destroyLanguagePanel();
@@ -558,7 +549,6 @@ function createLanguageButtons(scene, sw, sh) {
         });
 
         rect.on('pointerdown', (pointer, localX, localY, event) => {
-            // 防止点击语言按钮时触发开场遮罩的开始事件
             if (event) event.stopPropagation();
 
             localStorage.setItem('hou_lang', lang.code);
@@ -570,7 +560,6 @@ function createLanguageButtons(scene, sw, sh) {
 
 // =====================================================
 // 销毁语言按钮
-// 任何时候不想显示语言按钮，就调用这个
 // =====================================================
 function destroyLanguagePanel() {
     if (languagePanel) {
@@ -631,6 +620,7 @@ function update() {
 
 // =====================================================
 // 更新玩家碰撞体
+// 碰撞体偏小：防止卡石头
 // =====================================================
 function updatePlayerBodySize() {
     if (!player || !player.body) return;
@@ -1056,7 +1046,9 @@ function showWinScene(scene) {
         })
     ).setOrigin(0.5).setDepth(203);
 
-    restartBtn.on('pointerdown', () => window.location.reload());
+    restartBtn.on('pointerdown', () => {
+        window.location.href = window.location.pathname + '?v=' + Date.now();
+    });
 }
 
 
@@ -1111,14 +1103,15 @@ function gameOver(scene, reason) {
         })
     ).setOrigin(0.5).setDepth(303);
 
-    retryBtn.on('pointerdown', () => window.location.reload());
+    retryBtn.on('pointerdown', () => {
+        window.location.href = window.location.pathname + '?v=' + Date.now();
+    });
 }
 
 
 // =====================================================
 // 右下角方向控制按钮
 // 圆形按钮 + 图形箭头
-// 不用文字箭头，所以更整齐、更粗壮、更像游戏 UI
 // =====================================================
 function setupButtons(scene, screenH, screenW) {
     controlButtons = [];
@@ -1130,8 +1123,6 @@ function setupButtons(scene, screenH, screenW) {
     const gap = bSize * 0.25;
 
     // 控制区中心位置
-    // 想整体往左：把 2.45 改大一点，比如 2.65
-    // 想整体往上：把 2.35 改大一点，比如 2.55
     const cx = screenW - bSize * 2.45;
     const cy = screenH - bSize * 2.35;
 
@@ -1143,7 +1134,6 @@ function setupButtons(scene, screenH, screenW) {
     ];
 
     btns.forEach(b => {
-        // 按钮底部圆形
         const circle = scene.add.circle(
             b.x,
             b.y,
@@ -1152,7 +1142,6 @@ function setupButtons(scene, screenH, screenW) {
             0.28
         ).setInteractive().setDepth(20);
 
-        // 白色外圈
         const border = scene.add.circle(
             b.x,
             b.y,
@@ -1165,7 +1154,6 @@ function setupButtons(scene, screenH, screenW) {
             0.6
         ).setDepth(21);
 
-        // 画粗壮箭头，不用文字
         const arrow = scene.add.graphics().setDepth(22);
         drawArrow(arrow, b.x, b.y, b.dir, bSize, 0xffffff, 0.92);
 
@@ -1187,7 +1175,6 @@ function setupButtons(scene, screenH, screenW) {
                 moveDirection.dy = b.dy;
                 moveDirection.active = 1;
 
-                // 按下反馈：按钮更亮，箭头稍微变大
                 circle.setFillStyle(0x000000, 0.52);
                 border.setStrokeStyle(3.5 * gameScale, 0xffffff, 0.95);
 
@@ -1200,7 +1187,6 @@ function setupButtons(scene, screenH, screenW) {
         circle.on('pointerout', stopMove);
     });
 
-    // 防止鼠标 / 手指离开按钮后移动卡住
     scene.input.on('pointerup', () => {
         moveDirection.active = 0;
     });
