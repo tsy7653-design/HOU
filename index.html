@@ -2,22 +2,42 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
+
+    <!-- 手机 / iPad 高清适配，防止网页被浏览器缩放导致模糊 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
     <title>鲎的壮丽成长史</title>
+
     <style>
         html, body {
             margin: 0;
             padding: 0;
+            width: 100%;
+            height: 100%;
             overflow: hidden;
             background: #f4d1a0;
+
+            /* 防止手机端拖动页面、双指缩放影响游戏 */
+            touch-action: none;
+            overscroll-behavior: none;
         }
 
         canvas {
             display: block;
+            width: 100%;
+            height: 100%;
         }
     </style>
 </head>
+
 <body>
+    <!-- 推荐：如果你已经把 phaser.min.js 下载到项目里，用这一行，最稳定 -->
+    <!-- <script src="phaser.min.js"></script> -->
+
+    <!-- 如果你还没下载 phaser.min.js，就先用 CDN -->
     <script src="https://cdn.jsdelivr.net/npm/phaser@3.80.1/dist/phaser.min.js"></script>
-    <script src="game.js?v=10"></script>
+
+    <!-- 加 ?v=30 是为了强制刷新缓存，防止手机一直加载旧代码 -->
+    <script src="game.js?v=30"></script>
 </body>
 </html>

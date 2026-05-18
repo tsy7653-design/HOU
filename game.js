@@ -1,16 +1,43 @@
 // =====================================================
 // Phaser 游戏基础配置
+// 高清显示版：适配手机 / iPad / 高分屏
 // =====================================================
 const config = {
     type: Phaser.AUTO,
+
     width: window.innerWidth,
     height: window.innerHeight,
+
+    // 高分屏适配：让 iPad / 手机不要糊
+    // 最高限制到 2，避免太高导致性能下降
+    resolution: Math.min(window.devicePixelRatio || 1, 2),
+
     backgroundColor: '#f4d1a0',
+
+    render: {
+        antialias: true,
+        pixelArt: false,
+        roundPixels: false,
+        transparent: false
+    },
+
+    scale: {
+        mode: Phaser.Scale.RESIZE,
+        autoCenter: Phaser.Scale.CENTER_BOTH
+    },
+
     physics: {
         default: 'arcade',
-        arcade: { debug: false }
+        arcade: {
+            debug: false
+        }
     },
-    scene: { preload: preload, create: create, update: update }
+
+    scene: {
+        preload: preload,
+        create: create,
+        update: update
+    }
 };
 
 const game = new Phaser.Game(config);
@@ -216,7 +243,9 @@ function recalcLayout() {
 
     gameScale = Phaser.Math.Clamp(shortSide / 800, 0.65, 1.25);
 
-    baseWidth = Phaser.Math.Clamp(shortSide / 15, 42, 90);
+    // 玩家基础大小
+    // 想让鲎更大一点，可以把 shortSide / 14 改成 / 13
+    baseWidth = Phaser.Math.Clamp(shortSide / 14, 48, 100);
     baseHeight = baseWidth * aspectRatio;
 
     // 玩家移动速度
@@ -227,8 +256,13 @@ function recalcLayout() {
     baseGrowth = 1.2 * gameScale;
 
     baseStoneSize = Phaser.Math.Clamp(shortSide * 0.11, 70, 120);
-    shrimpSize = Phaser.Math.Clamp(shortSide * 0.055, 38, 60);
-    enemySize = Phaser.Math.Clamp(shortSide * 0.14, 95, 150);
+
+    // 虾稍微放大一点，在手机 / iPad 上更清楚
+    shrimpSize = Phaser.Math.Clamp(shortSide * 0.065, 44, 72);
+
+    enemySize = Phaser.Math.Clamp(shortSide * 0.15, 105, 165);
+
+    // 方向按钮大小
     buttonSize = Phaser.Math.Clamp(shortSide * 0.08, 56, 74);
 }
 
@@ -255,13 +289,15 @@ function makeTextStyle(size, color = '#000', extra = {}) {
 
 // =====================================================
 // 资源加载
+// 加 ?v=30 是为了防止手机 / 浏览器一直加载旧图片缓存
+// 如果你换了图片，就把 30 改成 31、32、33...
 // =====================================================
 function preload() {
-    this.load.image('hou', 'hou.png');
-    this.load.image('shrimp', 'shrimp.png');
-    this.load.image('bg', 'bg.jpg');
-    this.load.image('enemy', 'enemy.png');
-    this.load.image('stone', 'stone.png');
+    this.load.image('hou', 'hou.png?v=30');
+    this.load.image('shrimp', 'shrimp.png?v=30');
+    this.load.image('bg', 'bg.jpg?v=30');
+    this.load.image('enemy', 'enemy.png?v=30');
+    this.load.image('stone', 'stone.png?v=30');
 }
 
 
@@ -1094,8 +1130,8 @@ function setupButtons(scene, screenH, screenW) {
     const gap = bSize * 0.25;
 
     // 控制区中心位置
-    // 想整体往左：把 2.35 改大一点，比如 2.55
-    // 想整体往上：把 2.25 改大一点，比如 2.45
+    // 想整体往左：把 2.45 改大一点，比如 2.65
+    // 想整体往上：把 2.35 改大一点，比如 2.55
     const cx = screenW - bSize * 2.45;
     const cy = screenH - bSize * 2.35;
 
@@ -1170,13 +1206,14 @@ function setupButtons(scene, screenH, screenW) {
     });
 }
 
+
 // =====================================================
 // 绘制方向箭头
 // 用三角形画箭头，比文字箭头更整齐
 // =====================================================
 function drawArrow(graphics, x, y, dir, size, color, alpha) {
-    const arrowW = size * 0.34;
-    const arrowH = size * 0.38;
+    const arrowW = size * 0.38;
+    const arrowH = size * 0.42;
 
     graphics.fillStyle(color, alpha);
 
@@ -1216,6 +1253,7 @@ function drawArrow(graphics, x, y, dir, size, color, alpha) {
 
     graphics.fillPoints(points, true);
 }
+
 
 // =====================================================
 // 隐藏方向按钮
